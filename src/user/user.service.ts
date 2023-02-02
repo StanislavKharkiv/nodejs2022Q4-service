@@ -9,7 +9,7 @@ import { User, UserData } from './interfaces';
 export class UsersService {
   private users: User[] = [];
 
-  create(user: Pick<User, 'login' | 'password'>) {
+  create(user: Pick<User, 'login' | 'password'>): UserData {
     const created = Date.now();
     const newUser: User = {
       login: user.login,
@@ -20,6 +20,7 @@ export class UsersService {
       updatedAt: created,
     };
     this.users.push(newUser);
+    return omit(newUser, 'password');
   }
 
   findAll(): UserData[] {
@@ -38,11 +39,12 @@ export class UsersService {
     return true;
   }
 
-  update(userId: User['id'], userPassword: UpdateUserDto) {
+  update(userId: User['id'], userPassword: UpdateUserDto): UserData | number {
     const userIndex = this.users.map(({ id }) => id).indexOf(userId);
     if (userIndex === -1) return 404;
     if (this.users[userIndex].password !== userPassword.oldPassword) return 403;
     this.users[userIndex].password = userPassword.newPassword;
-    return 200;
+    this.users[userIndex].updatedAt = Date.now();
+    return omit(this.users[userIndex], 'password');
   }
 }
