@@ -25,18 +25,18 @@ export class ArtistService {
     return this.artist.find(({ id }) => id === artistId);
   }
 
-  remove(userId: Artist['id']) {
-    const filteredUsers = this.artist.filter(({ id }) => id !== userId);
-    if (filteredUsers.length === this.artist.length) return false;
-    this.artist = filteredUsers;
+  remove(artistId: Artist['id']) {
+    const filteredArtists = this.artist.filter(({ id }) => id !== artistId);
+    if (filteredArtists.length === this.artist.length) return false;
+    this.artist = filteredArtists;
     return true;
   }
 
-  update(userId: Artist['id'], artistData: CreateArtistDto): Artist {
-    const userIndex = this.artist.map(({ id }) => id).indexOf(userId);
-    if (userIndex === -1) return undefined;
-    this.artist[userIndex].name = artistData.name;
-    this.artist[userIndex].grammy = artistData.grammy;
-    return this.artist[userIndex];
+  update(artistId: Artist['id'], artistData: CreateArtistDto): Artist {
+    const artistIndex = this.artist.map(({ id }) => id).indexOf(artistId);
+    if (artistIndex === -1) return undefined;
+    this.artist[artistIndex].name = artistData.name;
+    this.artist[artistIndex].grammy = artistData.grammy;
+    return this.artist[artistIndex];
   }
 }

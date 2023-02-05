@@ -9,33 +9,34 @@ import {
   Put,
   Res,
 } from '@nestjs/common';
-import { validate } from 'uuid';
 import { Response } from 'express';
-import { CreateArtistDto } from './dto/create-artist.dto';
 import { TEXT } from 'src/constants';
 import { hasProperties } from 'src/helpers';
-import { ArtistService } from './artist.service';
+import { validate } from 'uuid';
+import { CreateTrackDto } from './dto/create-track.dto';
+import { TrackService } from './track.service';
 
-@Controller('artist')
-export class ArtistController {
-  constructor(private artistService: ArtistService) {}
+@Controller('track')
+export class TrackController {
+  constructor(private trackService: TrackService) {}
 
   @Post()
-  create(@Body() newArtist: CreateArtistDto, @Res() res: Response) {
-    const isValidData = hasProperties(newArtist, ['name', 'grammy']);
+  create(@Body() newTrack: CreateTrackDto, @Res() res: Response) {
+    const requiredFields = ['name', 'albumId', 'artistId', 'duration'];
+    const isValidData = hasProperties(newTrack, requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
 
-    const artist = this.artistService.create(newArtist);
-    res.status(HttpStatus.CREATED).send(artist);
+    const track = this.trackService.create(newTrack);
+    res.status(HttpStatus.CREATED).send(track);
   }
 
   @Get()
   findAll(@Res() res: Response) {
-    const artist = this.artistService.findAll();
-    res.status(HttpStatus.OK).send(artist);
+    const track = this.trackService.findAll();
+    res.status(HttpStatus.OK).send(track);
   }
 
   @Get(':id')
@@ -43,8 +44,8 @@ export class ArtistController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const artist = this.artistService.findOne(id);
-    if (artist) return res.status(HttpStatus.OK).send(artist);
+    const track = this.trackService.findOne(id);
+    if (track) return res.status(HttpStatus.OK).send(track);
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.userNotFound });
   }
 
@@ -53,7 +54,7 @@ export class ArtistController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.artistService.remove(id);
+    const isDeleted = this.trackService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res
@@ -64,20 +65,21 @@ export class ArtistController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() updateData: CreateArtistDto,
+    @Body() updateData: CreateTrackDto,
     @Res() res: Response,
   ) {
     // id validation
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
     // check required fields
-    const isValidData = hasProperties(updateData, ['name', 'grammy']);
+    const requiredFields = ['name', 'albumId', 'artistId', 'duration'];
+    const isValidData = hasProperties(updateData, requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
     // update user
-    const updateResp = this.artistService.update(id, updateData);
+    const updateResp = this.trackService.update(id, updateData);
     if (updateResp) return res.status(HttpStatus.OK).send(updateResp);
     // if user not found
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.userNotFound });
