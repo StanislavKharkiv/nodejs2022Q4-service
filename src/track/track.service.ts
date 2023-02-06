@@ -2,10 +2,11 @@ import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateTrackDto } from './dto/create-track.dto';
 import { Track } from './interfaces';
+import DB from 'src/db';
 
 @Injectable()
 export class TrackService {
-  private track: Track[] = [];
+  private track: Track[] = DB.tracks;
 
   create(track: Omit<Track, 'id'>): Track {
     const newTrack: Track = {

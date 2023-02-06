@@ -45,7 +45,7 @@ export class UserController {
 
     const user = this.usersService.findOne(id);
     if (user) return res.status(HttpStatus.OK).send(user);
-    res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.userNotFound });
+    res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Put(':id')
@@ -69,7 +69,7 @@ export class UserController {
     if (updateResp === 404)
       return res
         .status(HttpStatus.NOT_FOUND)
-        .send({ message: TEXT.userNotFound });
+        .send({ message: TEXT.notFound });
     if (updateResp === 403)
       return res
         .status(HttpStatus.FORBIDDEN)
@@ -88,6 +88,6 @@ export class UserController {
 
     return res
       .status(HttpStatus.NOT_FOUND)
-      .send({ message: TEXT.userNotFound });
+      .send({ message: TEXT.notFound });
   }
 }

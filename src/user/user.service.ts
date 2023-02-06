@@ -2,12 +2,12 @@ import { Injectable } from '@nestjs/common';
 import { omit } from 'src/helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from './dto';
-
 import { User, UserData } from './interfaces';
+import DB from 'src/db';
 
 @Injectable()
 export class UsersService {
-  private users: User[] = [];
+  private users: User[] = DB.users;
 
   create(user: Pick<User, 'login' | 'password'>): UserData {
     const created = Date.now();

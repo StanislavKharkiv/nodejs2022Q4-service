@@ -46,7 +46,7 @@ export class TrackController {
 
     const track = this.trackService.findOne(id);
     if (track) return res.status(HttpStatus.OK).send(track);
-    res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.userNotFound });
+    res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Delete(':id')
@@ -57,9 +57,7 @@ export class TrackController {
     const isDeleted = this.trackService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
-    return res
-      .status(HttpStatus.NOT_FOUND)
-      .send({ message: TEXT.userNotFound });
+    return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Put(':id')
@@ -78,10 +76,10 @@ export class TrackController {
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
-    // update user
+    // update
     const updateResp = this.trackService.update(id, updateData);
     if (updateResp) return res.status(HttpStatus.OK).send(updateResp);
-    // if user not found
-    res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.userNotFound });
+    // if not found
+    res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 }

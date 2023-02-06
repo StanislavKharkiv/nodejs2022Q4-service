@@ -1,41 +1,41 @@
 import {
-  Body,
   Controller,
-  Delete,
-  Get,
-  HttpStatus,
-  Param,
-  Post,
-  Put,
   Res,
+  Body,
+  Post,
+  Get,
+  Delete,
+  HttpStatus,
+  Put,
+  Param,
 } from '@nestjs/common';
 import { validate } from 'uuid';
 import { Response } from 'express';
-import { CreateArtistDto } from './dto/create-artist.dto';
 import { TEXT } from 'src/constants';
 import { hasProperties } from 'src/helpers';
-import { ArtistService } from './artist.service';
+import { AlbumService } from './album.service';
+import { CreateAlbumDto } from './dto/create-album.dto';
 
-@Controller('artist')
-export class ArtistController {
-  constructor(private artistService: ArtistService) {}
+@Controller('album')
+export class AlbumController {
+  constructor(private albumService: AlbumService) {}
 
   @Post()
-  create(@Body() newArtist: CreateArtistDto, @Res() res: Response) {
-    const isValidData = hasProperties(newArtist, ['name', 'grammy']);
+  create(@Body() newAlbum: CreateAlbumDto, @Res() res: Response) {
+    const isValidData = hasProperties(newAlbum, ['name', 'year', 'artistId']);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
 
-    const artist = this.artistService.create(newArtist);
-    res.status(HttpStatus.CREATED).send(artist);
+    const album = this.albumService.create(newAlbum);
+    res.status(HttpStatus.CREATED).send(album);
   }
 
   @Get()
   findAll(@Res() res: Response) {
-    const artist = this.artistService.findAll();
-    res.status(HttpStatus.OK).send(artist);
+    const albums = this.albumService.findAll();
+    res.status(HttpStatus.OK).send(albums);
   }
 
   @Get(':id')
@@ -43,8 +43,8 @@ export class ArtistController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const artist = this.artistService.findOne(id);
-    if (artist) return res.status(HttpStatus.OK).send(artist);
+    const album = this.albumService.findOne(id);
+    if (album) return res.status(HttpStatus.OK).send(album);
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
@@ -53,7 +53,7 @@ export class ArtistController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.artistService.remove(id);
+    const isDeleted = this.albumService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
@@ -62,7 +62,7 @@ export class ArtistController {
   @Put(':id')
   update(
     @Param('id') id: string,
-    @Body() updateData: CreateArtistDto,
+    @Body() updateData: CreateAlbumDto,
     @Res() res: Response,
   ) {
     // id validation
@@ -75,9 +75,9 @@ export class ArtistController {
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
     // update
-    const updateResp = this.artistService.update(id, updateData);
+    const updateResp = this.albumService.update(id, updateData);
     if (updateResp) return res.status(HttpStatus.OK).send(updateResp);
-    // if not found
+    // not found
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 }
