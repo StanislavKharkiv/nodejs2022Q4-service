@@ -32,10 +32,14 @@ export class ArtistService {
     DB.favorites.artists = DB.favorites.artists.filter(
       (item) => item !== artistId,
     );
-    const trackIndex = DB.tracks.findIndex(
-      (item) => item.artistId === artistId,
-    );
-    if (trackIndex >= 0) DB.tracks[trackIndex].artistId = null;
+    DB.tracks = DB.tracks.map((item) => {
+      if (item.artistId === artistId) return { ...item, artistId: null };
+      return item;
+    });
+    DB.albums = DB.albums.map((item) => {
+      if (item.artistId === artistId) return { ...item, artistId: null };
+      return item;
+    });
     return true;
   }
 

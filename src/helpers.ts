@@ -4,6 +4,15 @@ export function omit<T>(obj: T, name: keyof T) {
   return newObject;
 }
 
-export function hasProperties(obj: Record<any, any>, properties: string[]) {
-  return properties.every((item) => item in obj);
+export function hasProperties(
+  obj: Record<any, any>,
+  properties: { name: string; type: string[] }[],
+) {
+  return properties.every(
+    (item) =>
+      item.name in obj &&
+      item.type.includes(
+        obj[item.name] === null ? 'null' : typeof obj[item.name],
+      ),
+  );
 }

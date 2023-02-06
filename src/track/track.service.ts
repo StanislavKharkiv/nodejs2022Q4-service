@@ -6,8 +6,6 @@ import DB from 'src/db';
 
 @Injectable()
 export class TrackService {
-  private track: Track[] = DB.tracks;
-
   create(track: Omit<Track, 'id'>): Track {
     const newTrack: Track = {
       id: uuidv4(),
@@ -16,32 +14,32 @@ export class TrackService {
       artistId: track.artistId,
       duration: track.duration,
     };
-    this.track.push(newTrack);
+    DB.tracks.push(newTrack);
     return newTrack;
   }
 
   findAll(): Track[] {
-    return this.track;
+    return DB.tracks;
   }
 
   findOne(trackId: Track['id']): Track | undefined {
-    return this.track.find(({ id }) => id === trackId);
+    return DB.tracks.find(({ id }) => id === trackId);
   }
 
   remove(trackId: Track['id']) {
-    const filteredTracks = this.track.filter(({ id }) => id !== trackId);
-    if (filteredTracks.length === this.track.length) return false;
-    this.track = filteredTracks;
+    const filteredTracks = DB.tracks.filter(({ id }) => id !== trackId);
+    if (filteredTracks.length === DB.tracks.length) return false;
+    DB.tracks = filteredTracks;
     return true;
   }
 
   update(trackId: Track['id'], trackData: CreateTrackDto): Track {
-    const trackIndex = this.track.map(({ id }) => id).indexOf(trackId);
+    const trackIndex = DB.tracks.map(({ id }) => id).indexOf(trackId);
     if (trackIndex === -1) return undefined;
-    this.track[trackIndex].name = trackData.name;
-    this.track[trackIndex].albumId = trackData.albumId;
-    this.track[trackIndex].artistId = trackData.artistId;
-    this.track[trackIndex].duration = trackData.duration;
-    return this.track[trackIndex];
+    DB.tracks[trackIndex].name = trackData.name;
+    DB.tracks[trackIndex].albumId = trackData.albumId;
+    DB.tracks[trackIndex].artistId = trackData.artistId;
+    DB.tracks[trackIndex].duration = trackData.duration;
+    return DB.tracks[trackIndex];
   }
 }

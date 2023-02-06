@@ -27,9 +27,10 @@ export class UsersService {
     return this.users.map((user) => omit(user, 'password'));
   }
 
-  findOne(userId: User['id']): UserData | undefined {
+  findOne(userId: User['id']): UserData | false {
     const user = this.users.find(({ id }) => id === userId);
-    return omit(user, 'password');
+    if (user) return omit(user, 'password');
+    return false;
   }
 
   remove(userId: User['id']) {
@@ -45,6 +46,7 @@ export class UsersService {
     if (this.users[userIndex].password !== userPassword.oldPassword) return 403;
     this.users[userIndex].password = userPassword.newPassword;
     this.users[userIndex].updatedAt = Date.now();
+    this.users[userIndex].version += 1;
     return omit(this.users[userIndex], 'password');
   }
 }

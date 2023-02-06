@@ -14,6 +14,7 @@ interface DataBase {
     tracks: Track['id'][];
   };
 }
+
 const DB: DataBase = {
   artists: [],
   albums: [],

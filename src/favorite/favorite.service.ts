@@ -1,11 +1,15 @@
 import { Injectable } from '@nestjs/common';
-import { FavoritesResponse, FavoritesType } from './interfaces';
+import { FavoritesType } from './interfaces';
 import DB from 'src/db';
 
 @Injectable()
 export class FavoriteService {
-  findAll(): FavoritesResponse {
-    return DB.favorites;
+  findAll() {
+    const favs = DB.favorites;
+    const artists = DB.artists.filter((item) => favs.artists.includes(item.id));
+    const albums = DB.albums.filter((item) => favs.albums.includes(item.id));
+    const tracks = DB.tracks.filter((item) => favs.tracks.includes(item.id));
+    return { artists, albums, tracks };
   }
 
   add(id: string, category: FavoritesType) {

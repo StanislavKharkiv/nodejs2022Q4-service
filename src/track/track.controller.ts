@@ -20,10 +20,16 @@ import { TrackService } from './track.service';
 export class TrackController {
   constructor(private trackService: TrackService) {}
 
+  #requiredFields = [
+    { name: 'name', type: ['string'] },
+    { name: 'artistId', type: ['string', 'null'] },
+    { name: 'albumId', type: ['string', 'null'] },
+    { name: 'duration', type: ['number'] },
+  ];
+
   @Post()
   create(@Body() newTrack: CreateTrackDto, @Res() res: Response) {
-    const requiredFields = ['name', 'albumId', 'artistId', 'duration'];
-    const isValidData = hasProperties(newTrack, requiredFields);
+    const isValidData = hasProperties(newTrack, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
@@ -70,8 +76,7 @@ export class TrackController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
     // check required fields
-    const requiredFields = ['name', 'albumId', 'artistId', 'duration'];
-    const isValidData = hasProperties(updateData, requiredFields);
+    const isValidData = hasProperties(updateData, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)

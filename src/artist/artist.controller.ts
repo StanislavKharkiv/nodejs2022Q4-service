@@ -20,9 +20,14 @@ import { ArtistService } from './artist.service';
 export class ArtistController {
   constructor(private artistService: ArtistService) {}
 
+  #requiredFields = [
+    { name: 'name', type: ['string'] },
+    { name: 'grammy', type: ['boolean'] },
+  ];
+
   @Post()
   create(@Body() newArtist: CreateArtistDto, @Res() res: Response) {
-    const isValidData = hasProperties(newArtist, ['name', 'grammy']);
+    const isValidData = hasProperties(newArtist, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
@@ -69,7 +74,7 @@ export class ArtistController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
     // check required fields
-    const isValidData = hasProperties(updateData, ['name', 'grammy']);
+    const isValidData = hasProperties(updateData, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)

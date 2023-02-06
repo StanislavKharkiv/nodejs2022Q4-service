@@ -19,10 +19,15 @@ import { CreateAlbumDto } from './dto/create-album.dto';
 @Controller('album')
 export class AlbumController {
   constructor(private albumService: AlbumService) {}
+  #requiredFields = [
+    { name: 'name', type: ['string'] },
+    { name: 'year', type: ['number'] },
+    { name: 'artistId', type: ['string', 'null'] },
+  ];
 
   @Post()
   create(@Body() newAlbum: CreateAlbumDto, @Res() res: Response) {
-    const isValidData = hasProperties(newAlbum, ['name', 'year', 'artistId']);
+    const isValidData = hasProperties(newAlbum, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
@@ -69,7 +74,7 @@ export class AlbumController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
     // check required fields
-    const isValidData = hasProperties(updateData, ['name', 'grammy']);
+    const isValidData = hasProperties(updateData, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)

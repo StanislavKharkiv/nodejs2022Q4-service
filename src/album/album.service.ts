@@ -33,8 +33,10 @@ export class AlbumService {
     DB.favorites.albums = DB.favorites.albums.filter(
       (item) => item !== albumId,
     );
-    const trackIndex = DB.tracks.findIndex((item) => item.albumId === albumId);
-    if (trackIndex >= 0) DB.tracks[trackIndex].albumId = null;
+    DB.tracks = DB.tracks.map((item) => {
+      if (item.albumId === albumId) return { ...item, albumId: null };
+      return item;
+    });
     return true;
   }
 

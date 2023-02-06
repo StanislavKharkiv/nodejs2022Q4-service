@@ -20,9 +20,19 @@ import { TEXT } from 'src/constants';
 export class UserController {
   constructor(private usersService: UsersService) {}
 
+  #requiredFields = [
+    { name: 'login', type: ['string'] },
+    { name: 'password', type: ['string'] },
+  ];
+
+  #updateRequiredFields = [
+    { name: 'oldPassword', type: ['string'] },
+    { name: 'newPassword', type: ['string'] },
+  ];
+
   @Post()
   create(@Body() newUser: CreateUserDto, @Res() res: Response) {
-    const isValidData = hasProperties(newUser, ['login', 'password']);
+    const isValidData = hasProperties(newUser, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
@@ -58,8 +68,7 @@ export class UserController {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
     // check required fields
-    const requiredFields = ['oldPassword', 'newPassword'];
-    const isValidData = hasProperties(updateData, requiredFields);
+    const isValidData = hasProperties(updateData, this.#updateRequiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
@@ -67,9 +76,7 @@ export class UserController {
     // update user
     const updateResp = this.usersService.update(id, updateData);
     if (updateResp === 404)
-      return res
-        .status(HttpStatus.NOT_FOUND)
-        .send({ message: TEXT.notFound });
+      return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
     if (updateResp === 403)
       return res
         .status(HttpStatus.FORBIDDEN)
@@ -86,8 +93,6 @@ export class UserController {
     const isDeleted = this.usersService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
-    return res
-      .status(HttpStatus.NOT_FOUND)
-      .send({ message: TEXT.notFound });
+    return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 }
