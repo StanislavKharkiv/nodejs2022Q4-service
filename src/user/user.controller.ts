@@ -49,17 +49,17 @@ export class UserController {
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Res() res: Response) {
+  async findOne(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const user = this.usersService.findOne(id);
+    const user = await this.usersService.findOne(id);
     if (user) return res.status(HttpStatus.OK).send(user);
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateData: UpdateUserDto,
     @Res() res: Response,
@@ -74,7 +74,7 @@ export class UserController {
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
     // update user
-    const updateResp = this.usersService.update(id, updateData);
+    const updateResp = await this.usersService.update(id, updateData);
     if (updateResp === 404)
       return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
     if (updateResp === 403)
@@ -86,11 +86,11 @@ export class UserController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Res() res: Response) {
+  async remove(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.usersService.remove(id);
+    const isDeleted = await this.usersService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });

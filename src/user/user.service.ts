@@ -26,35 +26,46 @@ export class UserService {
       createdAt: created,
       updatedAt: created,
     };
-    await this.usersRepository.save(newUser);
-    this.users.push(newUser);
-    return omit(newUser, 'password');
+    const savedUser = await this.usersRepository.save(newUser);
+    return omit(savedUser, 'password');
   }
 
   async findAll(): Promise<UserData[]> {
-    return this.users.map((user) => omit(user, 'password'));
+    const users = await this.usersRepository.find();
+    return users.map((user) => omit(user, 'password'));
   }
 
-  findOne(userId: User['id']): UserData | false {
-    const user = this.users.find(({ id }) => id === userId);
+  async findOne(userId: User['id']): Promise<UserData | false> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
     if (user) return omit(user, 'password');
     return false;
   }
 
-  remove(userId: User['id']) {
-    const filteredUsers = this.users.filter(({ id }) => id !== userId);
-    if (filteredUsers.length === this.users.length) return false;
-    this.users = filteredUsers;
-    return true;
+  async remove(userId: User['id']) {
+    const isExist = await this.usersRepository.findOneBy({ id: userId });
+    if (isExist) {
+      await this.usersRepository.delete(userId);
+      return true;
+    }
+    return false;
   }
 
-  update(userId: User['id'], userPassword: UpdateUserDto): UserData | number {
-    const userIndex = this.users.map(({ id }) => id).indexOf(userId);
-    if (userIndex === -1) return 404;
-    if (this.users[userIndex].password !== userPassword.oldPassword) return 403;
-    this.users[userIndex].password = userPassword.newPassword;
-    this.users[userIndex].updatedAt = Date.now();
-    this.users[userIndex].version += 1;
-    return omit(this.users[userIndex], 'password');
+  async update(
+    userId: User['id'],
+    userPassword: UpdateUserDto,
+  ): Promise<UserData | number> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user) return 404;
+    if (user.password !== userPassword.oldPassword) return 403;
+    const updates = {
+      password: userPassword.newPassword,
+      updatedAt: Date.now(),
+      version: user.version + 1,
+    };
+    await this.usersRepository.update(userId, updates);
+    return omit(
+      { ...user, ...updates, createdAt: +user.createdAt },
+      'password',
+    );
   }
 }

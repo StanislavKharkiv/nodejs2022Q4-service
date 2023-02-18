@@ -34,6 +34,8 @@ services:
   adminer:
     image: adminer
     restart: always
+    networks:
+      - rest_api
     ports:
       - ${POSTGRES_ADMINER_PORT}:${POSTGRES_ADMINER_PORT}
 
