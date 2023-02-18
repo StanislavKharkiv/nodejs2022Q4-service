@@ -12,13 +12,13 @@ import {
 import { Response } from 'express';
 import { validate } from 'uuid';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { UsersService } from './user.service';
+import { UserService } from './user.service';
 import { hasProperties } from 'src/helpers';
 import { TEXT } from 'src/constants';
 
 @Controller('user')
 export class UserController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UserService) {}
 
   #requiredFields = [
     { name: 'login', type: ['string'] },
@@ -31,20 +31,20 @@ export class UserController {
   ];
 
   @Post()
-  create(@Body() newUser: CreateUserDto, @Res() res: Response) {
+  async create(@Body() newUser: CreateUserDto, @Res() res: Response) {
     const isValidData = hasProperties(newUser, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
 
-    const user = this.usersService.create(newUser);
+    const user = await this.usersService.create(newUser);
     res.status(HttpStatus.CREATED).send(user);
   }
 
   @Get()
-  findAll(@Res() res: Response) {
-    const users = this.usersService.findAll();
+  async findAll(@Res() res: Response) {
+    const users = await this.usersService.findAll();
     res.status(HttpStatus.OK).send(users);
   }
 

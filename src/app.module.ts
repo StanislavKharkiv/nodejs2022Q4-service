@@ -1,7 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { UserController, UsersService, User } from './user';
+import { DataSource } from 'typeorm';
+import { User, UserModule } from './user';
 import { ArtistController, ArtistService } from './artist';
 import { TrackController, TrackService } from './track';
 import { AlbumController, AlbumService } from './album';
@@ -22,21 +23,18 @@ const { POSTGRES_PORT, POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB } =
       database: POSTGRES_DB,
       entities: [User],
       synchronize: true,
+      logging: true,
     }),
+    UserModule,
   ],
   controllers: [
-    UserController,
     ArtistController,
     TrackController,
     AlbumController,
     FavoriteController,
   ],
-  providers: [
-    UsersService,
-    ArtistService,
-    TrackService,
-    AlbumService,
-    FavoriteService,
-  ],
+  providers: [ArtistService, TrackService, AlbumService, FavoriteService],
 })
-export class AppModule {}
+export class AppModule {
+  constructor(private dataSource: DataSource) {}
+}

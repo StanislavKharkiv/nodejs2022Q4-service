@@ -1,9 +1,9 @@
-import { Entity, Column, Timestamp } from 'typeorm';
+import { Entity, Column, PrimaryColumn } from 'typeorm';
 
 @Entity()
 export class User {
-  @Column()
-  id: number;
+  @PrimaryColumn()
+  id: string;
 
   @Column()
   login: string;
@@ -15,8 +15,8 @@ export class User {
   version: number;
 
   @Column()
-  createdAt: Timestamp;
+  createdAt: 'timestamp';
 
   @Column()
-  updatedAt: Timestamp;
+  updatedAt: 'timestamp';
 }

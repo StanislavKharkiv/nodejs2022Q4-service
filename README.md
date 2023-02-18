@@ -10,6 +10,19 @@
 ```
 git clone {repository URL}
 ```
+## Run with docker
+* `Docker` and `docker-compose` are needed for running the app. Here are the instructions:S
+
+https://docs.docker.com/engine/installation/#platform-support-matrix
+
+https://docs.docker.com/engine/installation/linux/linux-postinstall/
+
+https://docs.docker.com/compose/install/
+
+To run app make the next steps:
+```
+docker-compose up -d
+```
 
 ## Installing NPM modules
 

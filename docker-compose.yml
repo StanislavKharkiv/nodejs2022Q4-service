@@ -3,32 +3,40 @@ services:
   node:
     container_name: node_rest_api
     build: .
+    networks:
+      - rest_api
     restart: always
     ports:
       - ${PORT}:${PORT}
     depends_on:
       - postgres
     environment:
-      - PORT=${PORT}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - POSTGRES_DB=${POSTGRES_DB}
+      PORT: ${PORT}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - ./src:/app/src
   postgres:
     container_name: postgres
-    build: ./src/db
-    # ports: 
-    #   - ${POSTGRES_PORT}:${POSTGRES_PORT}
+    build: ./postgres
+    command: "-c logging_collector=on"
+    networks:
+      - rest_api
     environment:
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       POSTGRES_DB: ${POSTGRES_DB}
     restart: always
-    # volumes:
-    #   - ./src/db/data:/var/lib/postgresql/data
+    volumes:
+      - ./postgres/data:/var/lib/postgresql/data
+      - ./postgres/logs:/var/log/postgresql
   adminer:
     image: adminer
     restart: always
     ports:
-      - 8080:8080
+      - ${POSTGRES_ADMINER_PORT}:${POSTGRES_ADMINER_PORT}
+
+networks:
+  rest_api:
+    driver: bridge

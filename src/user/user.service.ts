@@ -4,12 +4,19 @@ import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from './dto';
 import { User, UserData } from './interfaces';
 import DB from 'src/db';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User as UserEntity } from './user.entity';
 
 @Injectable()
-export class UsersService {
+export class UserService {
   private users: User[] = DB.users;
+  constructor(
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<User>,
+  ) {}
 
-  create(user: Pick<User, 'login' | 'password'>): UserData {
+  async create(user: Pick<User, 'login' | 'password'>): Promise<UserData> {
     const created = Date.now();
     const newUser: User = {
       login: user.login,
@@ -19,11 +26,12 @@ export class UsersService {
       createdAt: created,
       updatedAt: created,
     };
+    await this.usersRepository.save(newUser);
     this.users.push(newUser);
     return omit(newUser, 'password');
   }
 
-  findAll(): UserData[] {
+  async findAll(): Promise<UserData[]> {
     return this.users.map((user) => omit(user, 'password'));
   }
 
