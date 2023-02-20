@@ -1,11 +1,11 @@
-import { Album } from 'src/album';
-import { Artist } from 'src/artist';
-import { Track } from 'src/track';
+import { IAlbum } from 'src/album';
+import { IArtist } from 'src/artist';
+import { ITrack } from 'src/track';
 
 export interface FavoritesResponse {
-  artists: Artist['id'][];
-  albums: Album['id'][];
-  tracks: Track['id'][];
+  artists: IArtist['id'][];
+  albums: IAlbum['id'][];
+  tracks: ITrack['id'][];
 }
 
 export type FavoritesType = keyof FavoritesResponse;

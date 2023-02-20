@@ -1,17 +1,17 @@
-import { Album } from 'src/album';
-import { Artist } from 'src/artist';
-import { Track } from 'src/track';
+import { IAlbum } from 'src/album';
+import { IArtist } from 'src/artist';
+import { ITrack } from 'src/track';
 import { User } from 'src/user/interfaces';
 
 interface DataBase {
-  artists: Artist[];
-  albums: Album[];
-  tracks: Track[];
+  artists: IArtist[];
+  albums: IAlbum[];
+  tracks: ITrack[];
   users: User[];
   favorites: {
-    artists: Artist['id'][];
-    albums: Album['id'][];
-    tracks: Track['id'][];
+    artists: IArtist['id'][];
+    albums: IAlbum['id'][];
+    tracks: ITrack['id'][];
   };
 }
 

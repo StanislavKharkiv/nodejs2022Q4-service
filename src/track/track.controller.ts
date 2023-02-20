@@ -28,46 +28,46 @@ export class TrackController {
   ];
 
   @Post()
-  create(@Body() newTrack: CreateTrackDto, @Res() res: Response) {
+  async create(@Body() newTrack: CreateTrackDto, @Res() res: Response) {
     const isValidData = hasProperties(newTrack, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
 
-    const track = this.trackService.create(newTrack);
+    const track = await this.trackService.create(newTrack);
     res.status(HttpStatus.CREATED).send(track);
   }
 
   @Get()
-  findAll(@Res() res: Response) {
-    const track = this.trackService.findAll();
+  async findAll(@Res() res: Response) {
+    const track = await this.trackService.findAll();
     res.status(HttpStatus.OK).send(track);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Res() res: Response) {
+  async findOne(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const track = this.trackService.findOne(id);
+    const track = await this.trackService.findOne(id);
     if (track) return res.status(HttpStatus.OK).send(track);
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Res() res: Response) {
+  async remove(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.trackService.remove(id);
+    const isDeleted = await this.trackService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateData: CreateTrackDto,
     @Res() res: Response,
@@ -82,7 +82,7 @@ export class TrackController {
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
     // update
-    const updateResp = this.trackService.update(id, updateData);
+    const updateResp = await this.trackService.update(id, updateData);
     if (updateResp) return res.status(HttpStatus.OK).send(updateResp);
     // if not found
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });

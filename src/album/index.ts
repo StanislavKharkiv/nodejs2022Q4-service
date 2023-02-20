@@ -1,3 +1,5 @@
 export * from './album.controller';
 export * from './album.service';
-export { Album } from './interfaces';
+export * from './album.entity';
+export * from './album.module';
+export { IAlbum } from './interfaces';

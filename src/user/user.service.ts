@@ -3,14 +3,12 @@ import { omit } from 'src/helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from './dto';
 import { User, UserData } from './interfaces';
-import DB from 'src/db';
 import { Repository } from 'typeorm';
 import { InjectRepository } from '@nestjs/typeorm';
 import { User as UserEntity } from './user.entity';
 
 @Injectable()
 export class UserService {
-  private users: User[] = DB.users;
   constructor(
     @InjectRepository(UserEntity)
     private usersRepository: Repository<User>,

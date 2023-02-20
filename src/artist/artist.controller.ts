@@ -26,46 +26,46 @@ export class ArtistController {
   ];
 
   @Post()
-  create(@Body() newArtist: CreateArtistDto, @Res() res: Response) {
+  async create(@Body() newArtist: CreateArtistDto, @Res() res: Response) {
     const isValidData = hasProperties(newArtist, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
 
-    const artist = this.artistService.create(newArtist);
+    const artist = await this.artistService.create(newArtist);
     res.status(HttpStatus.CREATED).send(artist);
   }
 
   @Get()
-  findAll(@Res() res: Response) {
-    const artist = this.artistService.findAll();
+  async findAll(@Res() res: Response) {
+    const artist = await this.artistService.findAll();
     res.status(HttpStatus.OK).send(artist);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Res() res: Response) {
+  async findOne(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const artist = this.artistService.findOne(id);
+    const artist = await this.artistService.findOne(id);
     if (artist) return res.status(HttpStatus.OK).send(artist);
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Res() res: Response) {
+  async remove(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.artistService.remove(id);
+    const isDeleted = await this.artistService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateData: CreateArtistDto,
     @Res() res: Response,
@@ -80,7 +80,7 @@ export class ArtistController {
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
     // update
-    const updateResp = this.artistService.update(id, updateData);
+    const updateResp = await this.artistService.update(id, updateData);
     if (updateResp) return res.status(HttpStatus.OK).send(updateResp);
     // if not found
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
