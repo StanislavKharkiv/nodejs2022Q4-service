@@ -10,4 +10,7 @@ export class Artist {
 
   @Column()
   grammy: boolean;
+
+  @Column({ default: false })
+  favorite: boolean;
 }

@@ -17,34 +17,34 @@ import { FavoritesType } from './interfaces';
 export class FavoriteController {
   constructor(private favoritesService: FavoriteService) {}
 
-  #addFavorite(type: FavoritesType, id: string, res: Response) {
+  async #addFavorite(type: FavoritesType, id: string, res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isAdded = this.favoritesService.add(id, type);
-    if (isAdded)
+    const isAdded = await this.favoritesService.add(id, type);
+    if (isAdded) {
       return res
         .status(HttpStatus.CREATED)
         .send({ message: TEXT.addedToFavorite });
-
+    }
     res
       .status(HttpStatus.UNPROCESSABLE_ENTITY)
       .send({ message: TEXT.notFound });
   }
 
-  #removeFavorite(type: FavoritesType, id: string, res: Response) {
+  async #removeFavorite(type: FavoritesType, id: string, res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.favoritesService.remove(id, type);
+    const isDeleted = await this.favoritesService.remove(id, type);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFavorite });
   }
 
   @Get()
-  findAll(@Res() res: Response) {
-    const favorites = this.favoritesService.findAll();
+  async findAll(@Res() res: Response) {
+    const favorites = await this.favoritesService.findAll();
     res.status(HttpStatus.OK).send(favorites);
   }
 

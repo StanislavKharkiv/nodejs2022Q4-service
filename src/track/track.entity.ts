@@ -16,4 +16,7 @@ export class Track {
 
   @Column()
   duration: number;
+
+  @Column({ default: false })
+  favorite: boolean;
 }

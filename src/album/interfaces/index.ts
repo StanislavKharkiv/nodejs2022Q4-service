@@ -3,4 +3,5 @@ export interface IAlbum {
   name: string;
   year: number;
   artistId: string | null;
+  favorite?: boolean;
 }

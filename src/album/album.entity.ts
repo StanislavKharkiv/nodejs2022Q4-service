@@ -13,4 +13,7 @@ export class Album {
 
   @Column({ default: null, nullable: true })
   artistId: string | null;
+
+  @Column({ default: false })
+  favorite: boolean;
 }

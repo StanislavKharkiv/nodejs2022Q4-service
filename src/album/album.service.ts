@@ -6,12 +6,15 @@ import { Album } from './album.entity';
 import DB from 'src/db';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
+import { TrackService } from 'src/track';
+import { omit } from 'src/helpers';
 
 @Injectable()
 export class AlbumService {
   constructor(
     @InjectRepository(Album)
     private albumsRepository: Repository<Album>,
+    private trackService: TrackService,
   ) {}
 
   async create(album: Omit<IAlbum, 'id'>): Promise<IAlbum> {
@@ -40,6 +43,7 @@ export class AlbumService {
     const isExist = await this.albumsRepository.findOneBy({ id: albumId });
     if (isExist) {
       await this.albumsRepository.delete(albumId);
+      await this.trackService.removeAlbum(albumId);
       return true;
     }
     return false;
@@ -79,5 +83,18 @@ export class AlbumService {
       { artistId: artistId },
       { artistId: null },
     );
+  }
+
+  async findFavorite() {
+    const favorites = await this.albumsRepository.findBy({ favorite: true });
+    return favorites.map((item) => omit(item, 'favorite'));
+  }
+
+  addToFavorite(id) {
+    return this.albumsRepository.update(id, { favorite: true });
+  }
+
+  removeFavorite(id) {
+    return this.albumsRepository.update(id, { favorite: false });
   }
 }

@@ -7,6 +7,8 @@ import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { Artist } from './artist.entity';
 import { AlbumService } from 'src/album';
+import { omit } from 'src/helpers';
+import { TrackService } from 'src/track';
 
 @Injectable()
 export class ArtistService {
@@ -14,6 +16,7 @@ export class ArtistService {
     @InjectRepository(Artist)
     private artistRepository: Repository<Artist>,
     private albumService: AlbumService,
+    private trackService: TrackService,
   ) {}
 
   create(artist: Omit<IArtist, 'id'>): Promise<IArtist> {
@@ -42,6 +45,7 @@ export class ArtistService {
     if (isExist) {
       await this.artistRepository.delete(artistId);
       await this.albumService.removeArtist(artistId);
+      await this.trackService.removeArtist(artistId);
       return true;
     }
     return false;
@@ -76,5 +80,18 @@ export class ArtistService {
     if (!album) return undefined;
     await this.artistRepository.update(artistId, artistData);
     return { ...album, ...artistData };
+  }
+
+  async findFavorite() {
+    const favorites = await this.artistRepository.findBy({ favorite: true });
+    return favorites.map((item) => omit(item, 'favorite'));
+  }
+
+  addToFavorite(id) {
+    return this.artistRepository.update(id, { favorite: true });
+  }
+
+  removeFavorite(id) {
+    return this.artistRepository.update(id, { favorite: false });
   }
 }

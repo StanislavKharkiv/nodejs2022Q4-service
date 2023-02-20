@@ -6,6 +6,7 @@ import { CreateTrackDto } from './dto/create-track.dto';
 import { ITrack } from './interfaces';
 import DB from 'src/db';
 import { Track } from './track.entity';
+import { omit } from 'src/helpers';
 
 @Injectable()
 export class TrackService {
@@ -62,5 +63,26 @@ export class TrackService {
     if (!album) return undefined;
     await this.trackRepository.update(trackId, trackData);
     return { ...album, ...trackData };
+  }
+
+  removeArtist(id) {
+    this.trackRepository.update({ artistId: id }, { artistId: null });
+  }
+
+  removeAlbum(id) {
+    this.trackRepository.update({ albumId: id }, { albumId: null });
+  }
+
+  async findFavorite() {
+    const favorites = await this.trackRepository.findBy({ favorite: true });
+    return favorites.map((item) => omit(item, 'favorite'));
+  }
+
+  addToFavorite(id) {
+    return this.trackRepository.update(id, { favorite: true });
+  }
+
+  removeFavorite(id) {
+    return this.trackRepository.update(id, { favorite: false });
   }
 }

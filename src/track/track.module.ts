@@ -8,5 +8,6 @@ import { TrackController } from './track.controller';
   imports: [TypeOrmModule.forFeature([Track])],
   providers: [TrackService],
   controllers: [TrackController],
+  exports: [TrackService],
 })
 export class TrackModule {}
