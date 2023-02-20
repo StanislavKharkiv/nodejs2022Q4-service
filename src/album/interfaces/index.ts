@@ -1,6 +1,7 @@
-export interface Album {
+export interface IAlbum {
   id: string;
   name: string;
   year: number;
   artistId: string | null;
+  favorite?: boolean;
 }

@@ -3,13 +3,18 @@ import { omit } from 'src/helpers';
 import { v4 as uuidv4 } from 'uuid';
 import { UpdateUserDto } from './dto';
 import { User, UserData } from './interfaces';
-import DB from 'src/db';
+import { Repository } from 'typeorm';
+import { InjectRepository } from '@nestjs/typeorm';
+import { User as UserEntity } from './user.entity';
 
 @Injectable()
-export class UsersService {
-  private users: User[] = DB.users;
+export class UserService {
+  constructor(
+    @InjectRepository(UserEntity)
+    private usersRepository: Repository<User>,
+  ) {}
 
-  create(user: Pick<User, 'login' | 'password'>): UserData {
+  async create(user: Pick<User, 'login' | 'password'>): Promise<UserData> {
     const created = Date.now();
     const newUser: User = {
       login: user.login,
@@ -19,34 +24,46 @@ export class UsersService {
       createdAt: created,
       updatedAt: created,
     };
-    this.users.push(newUser);
-    return omit(newUser, 'password');
+    const savedUser = await this.usersRepository.save(newUser);
+    return omit(savedUser, 'password');
   }
 
-  findAll(): UserData[] {
-    return this.users.map((user) => omit(user, 'password'));
+  async findAll(): Promise<UserData[]> {
+    const users = await this.usersRepository.find();
+    return users.map((user) => omit(user, 'password'));
   }
 
-  findOne(userId: User['id']): UserData | false {
-    const user = this.users.find(({ id }) => id === userId);
+  async findOne(userId: User['id']): Promise<UserData | false> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
     if (user) return omit(user, 'password');
     return false;
   }
 
-  remove(userId: User['id']) {
-    const filteredUsers = this.users.filter(({ id }) => id !== userId);
-    if (filteredUsers.length === this.users.length) return false;
-    this.users = filteredUsers;
-    return true;
+  async remove(userId: User['id']) {
+    const isExist = await this.usersRepository.findOneBy({ id: userId });
+    if (isExist) {
+      await this.usersRepository.delete(userId);
+      return true;
+    }
+    return false;
   }
 
-  update(userId: User['id'], userPassword: UpdateUserDto): UserData | number {
-    const userIndex = this.users.map(({ id }) => id).indexOf(userId);
-    if (userIndex === -1) return 404;
-    if (this.users[userIndex].password !== userPassword.oldPassword) return 403;
-    this.users[userIndex].password = userPassword.newPassword;
-    this.users[userIndex].updatedAt = Date.now();
-    this.users[userIndex].version += 1;
-    return omit(this.users[userIndex], 'password');
+  async update(
+    userId: User['id'],
+    userPassword: UpdateUserDto,
+  ): Promise<UserData | number> {
+    const user = await this.usersRepository.findOneBy({ id: userId });
+    if (!user) return 404;
+    if (user.password !== userPassword.oldPassword) return 403;
+    const updates = {
+      password: userPassword.newPassword,
+      updatedAt: Date.now(),
+      version: user.version + 1,
+    };
+    await this.usersRepository.update(userId, updates);
+    return omit(
+      { ...user, ...updates, createdAt: +user.createdAt },
+      'password',
+    );
   }
 }

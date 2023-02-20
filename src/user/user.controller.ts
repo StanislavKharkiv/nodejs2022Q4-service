@@ -12,13 +12,13 @@ import {
 import { Response } from 'express';
 import { validate } from 'uuid';
 import { CreateUserDto, UpdateUserDto } from './dto';
-import { UsersService } from './user.service';
+import { UserService } from './user.service';
 import { hasProperties } from 'src/helpers';
 import { TEXT } from 'src/constants';
 
 @Controller('user')
 export class UserController {
-  constructor(private usersService: UsersService) {}
+  constructor(private usersService: UserService) {}
 
   #requiredFields = [
     { name: 'login', type: ['string'] },
@@ -31,35 +31,35 @@ export class UserController {
   ];
 
   @Post()
-  create(@Body() newUser: CreateUserDto, @Res() res: Response) {
+  async create(@Body() newUser: CreateUserDto, @Res() res: Response) {
     const isValidData = hasProperties(newUser, this.#requiredFields);
     if (!isValidData)
       return res
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
 
-    const user = this.usersService.create(newUser);
+    const user = await this.usersService.create(newUser);
     res.status(HttpStatus.CREATED).send(user);
   }
 
   @Get()
-  findAll(@Res() res: Response) {
-    const users = this.usersService.findAll();
+  async findAll(@Res() res: Response) {
+    const users = await this.usersService.findAll();
     res.status(HttpStatus.OK).send(users);
   }
 
   @Get(':id')
-  findOne(@Param('id') id: string, @Res() res: Response) {
+  async findOne(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const user = this.usersService.findOne(id);
+    const user = await this.usersService.findOne(id);
     if (user) return res.status(HttpStatus.OK).send(user);
     res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
   }
 
   @Put(':id')
-  update(
+  async update(
     @Param('id') id: string,
     @Body() updateData: UpdateUserDto,
     @Res() res: Response,
@@ -74,7 +74,7 @@ export class UserController {
         .status(HttpStatus.BAD_REQUEST)
         .send({ message: TEXT.requiredFields });
     // update user
-    const updateResp = this.usersService.update(id, updateData);
+    const updateResp = await this.usersService.update(id, updateData);
     if (updateResp === 404)
       return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });
     if (updateResp === 403)
@@ -86,11 +86,11 @@ export class UserController {
   }
 
   @Delete(':id')
-  remove(@Param('id') id: string, @Res() res: Response) {
+  async remove(@Param('id') id: string, @Res() res: Response) {
     if (!validate(id))
       return res.status(HttpStatus.BAD_REQUEST).send({ message: TEXT.wrongId });
 
-    const isDeleted = this.usersService.remove(id);
+    const isDeleted = await this.usersService.remove(id);
     if (isDeleted) return res.status(HttpStatus.NO_CONTENT).send();
 
     return res.status(HttpStatus.NOT_FOUND).send({ message: TEXT.notFound });

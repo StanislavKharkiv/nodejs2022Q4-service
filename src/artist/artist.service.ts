@@ -1,53 +1,71 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
 import { CreateArtistDto } from './dto/create-artist.dto';
-import { Artist } from './interfaces';
-import DB from 'src/db';
+import { IArtist } from './interfaces';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
+import { Artist } from './artist.entity';
+import { AlbumService } from 'src/album';
+import { omit } from 'src/helpers';
+import { TrackService } from 'src/track';
 
 @Injectable()
 export class ArtistService {
-  create(artist: Omit<Artist, 'id'>): Artist {
-    const newArtist: Artist = {
+  constructor(
+    @InjectRepository(Artist)
+    private artistRepository: Repository<Artist>,
+    private albumService: AlbumService,
+    private trackService: TrackService,
+  ) {}
+
+  create(artist: Omit<IArtist, 'id'>): Promise<IArtist> {
+    const newArtist: IArtist = {
       id: uuidv4(),
       name: artist.name,
       grammy: artist.grammy,
     };
-    DB.artists.push(newArtist);
-    return newArtist;
+    return this.artistRepository.save(newArtist);
   }
 
-  findAll(): Artist[] {
-    return DB.artists;
+  findAll(): Promise<IArtist[]> {
+    return this.artistRepository.find();
   }
 
-  findOne(artistId: Artist['id']): Artist | undefined {
-    return DB.artists.find(({ id }) => id === artistId);
+  findOne(artistId: IArtist['id']): Promise<IArtist | null> {
+    return this.artistRepository.findOneBy({ id: artistId });
   }
 
-  remove(artistId: Artist['id']) {
-    const filteredArtists = DB.artists.filter(({ id }) => id !== artistId);
-    if (filteredArtists.length === DB.artists.length) return false;
-    DB.artists = filteredArtists;
-    // delete from other places
-    DB.favorites.artists = DB.favorites.artists.filter(
-      (item) => item !== artistId,
-    );
-    DB.tracks = DB.tracks.map((item) => {
-      if (item.artistId === artistId) return { ...item, artistId: null };
-      return item;
-    });
-    DB.albums = DB.albums.map((item) => {
-      if (item.artistId === artistId) return { ...item, artistId: null };
-      return item;
-    });
-    return true;
+  async remove(artistId: IArtist['id']) {
+    const isExist = await this.artistRepository.findOneBy({ id: artistId });
+    if (isExist) {
+      await this.artistRepository.delete(artistId);
+      await this.albumService.removeArtist(artistId);
+      await this.trackService.removeArtist(artistId);
+      return true;
+    }
+    return false;
   }
 
-  update(artistId: Artist['id'], artistData: CreateArtistDto): Artist {
-    const artistIndex = DB.artists.map(({ id }) => id).indexOf(artistId);
-    if (artistIndex === -1) return undefined;
-    DB.artists[artistIndex].name = artistData.name;
-    DB.artists[artistIndex].grammy = artistData.grammy;
-    return DB.artists[artistIndex];
+  async update(
+    artistId: IArtist['id'],
+    artistData: CreateArtistDto,
+  ): Promise<IArtist> {
+    const album = await this.artistRepository.findOneBy({ id: artistId });
+    if (!album) return undefined;
+    await this.artistRepository.update(artistId, artistData);
+    return { ...album, ...artistData };
+  }
+
+  async findFavorite() {
+    const favorites = await this.artistRepository.findBy({ favorite: true });
+    return favorites.map((item) => omit(item, 'favorite'));
+  }
+
+  addToFavorite(id) {
+    return this.artistRepository.update(id, { favorite: true });
+  }
+
+  removeFavorite(id) {
+    return this.artistRepository.update(id, { favorite: false });
   }
 }

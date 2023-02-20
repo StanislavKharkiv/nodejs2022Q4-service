@@ -1,45 +1,72 @@
 import { Injectable } from '@nestjs/common';
 import { v4 as uuidv4 } from 'uuid';
+import { InjectRepository } from '@nestjs/typeorm';
+import { Repository } from 'typeorm';
 import { CreateTrackDto } from './dto/create-track.dto';
-import { Track } from './interfaces';
-import DB from 'src/db';
+import { ITrack } from './interfaces';
+import { Track } from './track.entity';
+import { omit } from 'src/helpers';
 
 @Injectable()
 export class TrackService {
-  create(track: Omit<Track, 'id'>): Track {
-    const newTrack: Track = {
+  constructor(
+    @InjectRepository(Track)
+    private trackRepository: Repository<Track>,
+  ) {}
+
+  create(track: Omit<ITrack, 'id'>): Promise<ITrack> {
+    const newTrack: ITrack = {
       id: uuidv4(),
       name: track.name,
       albumId: track.albumId,
       artistId: track.artistId,
       duration: track.duration,
     };
-    DB.tracks.push(newTrack);
-    return newTrack;
+    return this.trackRepository.save(newTrack);
   }
 
-  findAll(): Track[] {
-    return DB.tracks;
+  findAll() {
+    return this.trackRepository.find();
   }
 
-  findOne(trackId: Track['id']): Track | undefined {
-    return DB.tracks.find(({ id }) => id === trackId);
+  findOne(trackId: ITrack['id']) {
+    return this.trackRepository.findOneBy({ id: trackId });
   }
 
-  remove(trackId: Track['id']) {
-    const filteredTracks = DB.tracks.filter(({ id }) => id !== trackId);
-    if (filteredTracks.length === DB.tracks.length) return false;
-    DB.tracks = filteredTracks;
-    return true;
+  async remove(trackId: ITrack['id']) {
+    const isExist = await this.trackRepository.findOneBy({ id: trackId });
+    if (isExist) {
+      await this.trackRepository.delete(trackId);
+      return true;
+    }
+    return false;
   }
 
-  update(trackId: Track['id'], trackData: CreateTrackDto): Track {
-    const trackIndex = DB.tracks.map(({ id }) => id).indexOf(trackId);
-    if (trackIndex === -1) return undefined;
-    DB.tracks[trackIndex].name = trackData.name;
-    DB.tracks[trackIndex].albumId = trackData.albumId;
-    DB.tracks[trackIndex].artistId = trackData.artistId;
-    DB.tracks[trackIndex].duration = trackData.duration;
-    return DB.tracks[trackIndex];
+  async update(trackId: ITrack['id'], trackData: CreateTrackDto) {
+    const album = await this.trackRepository.findOneBy({ id: trackId });
+    if (!album) return undefined;
+    await this.trackRepository.update(trackId, trackData);
+    return { ...album, ...trackData };
+  }
+
+  removeArtist(id) {
+    this.trackRepository.update({ artistId: id }, { artistId: null });
+  }
+
+  removeAlbum(id) {
+    this.trackRepository.update({ albumId: id }, { albumId: null });
+  }
+
+  async findFavorite() {
+    const favorites = await this.trackRepository.findBy({ favorite: true });
+    return favorites.map((item) => omit(item, 'favorite'));
+  }
+
+  addToFavorite(id) {
+    return this.trackRepository.update(id, { favorite: true });
+  }
+
+  removeFavorite(id) {
+    return this.trackRepository.update(id, { favorite: false });
   }
 }
